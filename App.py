@@ -4,7 +4,7 @@ import requests
 app = Flask(__name__)
 
 WHATSAPP_API_URL = "https://graph.facebook.com/v18.0/563469153515061/messages"
-WHATSAPP_ACCESS_TOKEN = "EAAQwfmEhplQBOyEGEIfvHnfevLwUaMK1ylhEXl23nG2hcEjBI7w4o1wKZClY00wZCTyfwZBOKWKyPiZCWHfc2922CdgYuJK8tZBZAZBvqshqaV5zTrqdpp97jE10NVvuW6Brty4j6YjmMzS11UqGDVu8vBapFz9km3tMaZCKHUQqIql0KhCbGbR2SGd7J7EuHX63aKHZCpFEYhrlgeUrIREkgXLkgsSheVHIqxQBjyuzi71Bu"
+WHATSAPP_ACCESS_TOKEN = "EAAQwfmEhplQBO4pJkdU80NopGF4FWQxjkZCTZCYUHyZCk7RCYJjrM8ZBHGjujLq7XfDyVrYv1cuwPTuUqQuwqqPnoWMdPhPwMzTkeEovpPxFufuPtzu9UKvFgHC5vUZAOxbZBeLFelWW6IyCWs1lDMMGhrZCL3EaLVOO3gJvNRzNeJYTaignonoZBzj1LZCeJ18TFPfhEZCMEAdFKyLTQQ3inVIAna0eduRN7OF9ZB5LvChuQgZD"
 VECTARA_API_URL = "https://api.vectara.io/v2/corpora"    # /v2/corpora/technology-corpus/
 VECTARA_API_KEY = "zqt__4OdcJUKithvLlaOz8LiuzXULBrX8y0kmVrpbg" 
 
@@ -42,4 +42,4 @@ def webhook():
     return jsonify({"status": "success"}), 200
 
 if __name__ == "__main__":
-    app.run(port=5000)
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
