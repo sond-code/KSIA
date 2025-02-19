@@ -6,9 +6,12 @@ app = Flask(__name__)
 
 # Load API keys from environment variables (recommended for security)
 WHATSAPP_API_URL = "https://graph.facebook.com/v18.0/563469153515061/messages"
-WHATSAPP_ACCESS_TOKEN = os.getenv("EAAQwfmEhplQBOybxM3LjK4rSKwFqalivj0vFStpU3ybZAFgEvMjrtBBNTlNYaJCVag4ZBOxKudOaWTo3O5Jh9XwJdoQLewY0NbhihXVKowMSImWYK4DrvTmEEp3M2uusstErMJdJ7xMBwjZCZCZAUlatrZAdkoDp6ihBNymc44ecooeZBbxz5jVPkA7DLdoZA05QjzGHZASve790lZB24yF0DnUyDyeecKB1Xjj2RxmVVLodoZD")
+WHATSAPP_ACCESS_TOKEN = os.getenv("WHATSAPP_ACCESS_TOKEN")  # Load from environment variable
 VECTARA_API_URL = "https://api.vectara.io/v2/corpora"
-VECTARA_API_KEY = os.getenv("zwt__4OdcLYkSOvnvUk1pg3HBaR116CseKBaGt1-cw")
+VECTARA_API_KEY = os.getenv("VECTARA_API_KEY")  # Load from environment variable
+
+# Verify token for WhatsApp API webhook validation
+VERIFY_TOKEN = os.getenv("VERIFY_TOKEN", "my_custom_verify_token")  # Set a verification token
 
 def query_vectara(user_message):
     """ Sends the WhatsApp message to Vectara API and returns the response. """
@@ -19,7 +22,7 @@ def query_vectara(user_message):
     payload = {
         "query": [{"query": user_message, "numResults": 3}]
     }
-    
+
     try:
         response = requests.post(VECTARA_API_URL, headers=headers, json=payload)
         response.raise_for_status()
@@ -40,15 +43,33 @@ def send_whatsapp_message(recipient, message):
         "type": "text",
         "text": {"body": message}
     }
-    
+
     try:
         response = requests.post(WHATSAPP_API_URL, headers=headers, json=payload)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         print(f"WhatsApp API Error: {e}")
 
+# ✅ Webhook verification for WhatsApp API (Meta requires this)
+@app.route("/webhook", methods=["GET"])
+def verify_webhook():
+    """ Handles GET requests for WhatsApp webhook verification """
+    mode = request.args.get("hub.mode")
+    token = request.args.get("hub.verify_token")
+    challenge = request.args.get("hub.challenge")
+
+    if mode and token:
+        if mode == "subscribe" and token == VERIFY_TOKEN:
+            print("Webhook verified successfully!")
+            return challenge, 200
+        else:
+            return jsonify({"error": "Invalid verification token"}), 403
+
+    return jsonify({"error": "Missing verification parameters"}), 400
+
+# ✅ Webhook for receiving WhatsApp messages
 @app.route("/webhook", methods=["POST"])
-def webhook():
+def receive_message():
     """ Handles incoming WhatsApp messages. """
     data = request.json
     try:
@@ -69,8 +90,10 @@ def webhook():
 
     return jsonify({"status": "success"}), 200
 
+# ✅ Simple home route for testing
+@app.route("/")
+def home():
+    return "Hello, World!"
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
-
-
-
